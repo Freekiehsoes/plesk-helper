@@ -68,3 +68,6 @@ def domain_delete():
     areyousure = questionary.confirm("Are you sure?").ask()
     if areyousure:
         execute_command(args)
+
+if __name__ == '__main__':
+    cli()
