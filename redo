@@ -1,0 +1,5 @@
+#!/bin/bash
+rm plesk-helper/plesk-helper;
+touch plesk-helper/plesk-helper;
+chmod +x plesk-helper/plesk-helper;
+nano plesk-helper/plesk-helper;
