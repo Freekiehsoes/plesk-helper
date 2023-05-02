@@ -44,28 +44,24 @@ def domain_create(domain, hosting):
     if domain_exists(domain):
         click.echo('Domain already exists')
         return
-    args = ['plesk', 'bin', 'domain', '--create']
-    hostingcommand = ['plesk', 'bin', 'site', '-u', domain, '-hosting true', '-ip', get_current_ip()]
+    args = ['/usr/local/psa/bin/subscription', '--create']
     args.append(domain)
+
+    if(hosting == 'yes'):
+        args.append('-hosting true')
+        args.append('-ip ' + get_current_ip())
+        user = click.prompt('Enter username')
+        args.append('-login ' + user)
+        password = click.prompt('Enter password', hide_input=True)
+        args.append('-passwd ' + password)
 
     click.echo('Creating domain...')
     result = run_command(args)
-    created = False
     if result.returncode == 0:
         click.echo('Domain created successfully')
-        created = True
     else:
         click.echo('Error creating domain')
         click.echo(result.stderr.decode('utf-8'))
-
-    if created and hosting == 'yes':
-        click.echo('Enabling hosting...')
-        result = run_command(hostingcommand)
-        if result.returncode == 0:
-            click.echo('Hosting enabled successfully')
-        else:
-            click.echo('Error enabling hosting')
-            click.echo(result.stderr.decode('utf-8'))
 
 
 @domain.command('delete')
