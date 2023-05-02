@@ -45,10 +45,8 @@ def domain_create(domain, hosting):
         click.echo('Domain already exists')
         return
     args = ['plesk', 'bin', 'domain', '--create']
-    hostingcommand = []
+    hostingcommand = ['plesk', 'bin', 'site', '--update', domain, '-hosting true']
     args.append(domain)
-    if hosting == 'yes':
-        hostingcommand.append(f'plesk bin domain -u {domain} -hosting true')
 
     click.echo('Creating domain...')
     result = run_command(args)
