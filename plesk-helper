@@ -46,8 +46,7 @@ def domain_create(domain, hosting):
     if domain_exists(domain):
         click.echo('Domain already exists')
         return
-    args = ['/usr/local/psa/bin/subscription', '--create']
-    args.append(domain)
+    args = ['plesk bin site', '--create', domain]
 
     if(hosting == 'yes'):
         args.append('-hosting true')
@@ -59,11 +58,10 @@ def domain_create(domain, hosting):
 
     click.echo('Creating domain...')
     result = run_command(args)
-    if result.returncode == 0:
+    if result == 0:
         click.echo('Domain created successfully')
     else:
         click.echo('Error creating domain')
-        click.echo(result.stderr.decode('utf-8'))
 
 
 @domain.command('delete')
@@ -76,16 +74,14 @@ def domain_delete(domain):
     sure = click.confirm('Are you sure you want to delete the domain?')
     if not sure:
         return
-    args = ['plesk', 'bin', 'domain', '--remove']
-    args.append(domain)
+    args = ['plesk', 'bin', 'domain', '--remove', domain]
 
     click.echo('Deleting domain...')
     result = run_command(args)
-    if result.returncode == 0:
+    if result == 0:
         click.echo('Domain deleted successfully')
     else:
         click.echo('Error deleting domain')
-        click.echo(result.stderr.decode('utf-8'))
 
 
 # start cli on call
