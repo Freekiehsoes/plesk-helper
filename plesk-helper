@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import os
+
 import click
 import subprocess
 import socket
@@ -24,7 +26,7 @@ def domain_exists(domain):
 
 def run_command(command_array):
     command_string = ' '.join(command_array)
-    return subprocess.run(command_array, capture_output=True)
+    return os.system(command_string)
 
 
 @click.group()
