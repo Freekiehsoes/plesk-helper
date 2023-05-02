@@ -38,28 +38,29 @@ def domain_create(domain, hosting):
         click.echo('Domain already exists')
         return
     args = ['plesk', 'bin', 'domain', '--create']
+    hostingcommand = []
     args.append(domain)
     if hosting == 'yes':
-        args.append('-hosting')
-        args.append('-ip')
-        args.append(get_current_ip())
-
-        username = click.prompt('Username')
-        args.append('-login')
-        args.append(username)
-
-        password = click.prompt('Password', hide_input=True)
-        args.append('-passwd')
-        args.append(password)
+        hostingcommand.append(f'plesk bin domain -u {domain} -hosting true')
 
     click.echo('Creating domain...')
     result = subprocess.run(args, capture_output=True)
+    created= False
     if result.returncode == 0:
         click.echo('Domain created successfully')
+        created = True
     else:
         click.echo('Error creating domain')
         click.echo(result.stderr.decode('utf-8'))
 
+    if created and hosting == 'yes':
+        click.echo('Enabling hosting...')
+        result = subprocess.run(hostingcommand, capture_output=True)
+        if result.returncode == 0:
+            click.echo('Hosting enabled successfully')
+        else:
+            click.echo('Error enabling hosting')
+            click.echo(result.stderr.decode('utf-8'))
 
 @domain.command('delete')
 @click.option('--domain', prompt=True, help='Domain name')
