@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import questionary
 import click
 import subprocess
 import socket
@@ -27,65 +26,62 @@ def domain_exists(domain):
 def cli():
     pass
 
+@cli.group()
+def domain():
+    pass
 
-@cli.command()
-def domain_create():
-    args = ['plesk', 'bin', 'domain', '--create']
-    domain = questionary.text("Enter domain name").ask()
-    args.append(domain)
-    enable_hosting = questionary.select("Enable hosting?", choices=["Yes", "No"]).ask()
-    if enable_hosting == "Yes":
-        args.append("-hosting")
-        ip = get_current_ip()
-        args.append('-ip')
-        args.append(ip)
-        # prompt for user
-        user = questionary.text("Enter username").ask()
-        args.append('-login')
-        args.append(user)
-        password = questionary.password("Enter password").ask()
-        args.append('-passwd')
-        args.append(password)
-    subprocess.run(args)
-
-
-@cli.command()
-def domain_delete():
-    args = ['plesk', 'bin', 'domain', '--delete']
-    domain = questionary.text("Enter domain name").ask()
-    args.append(domain)
-    confirm_domain = questionary.text(
-        f"Are you sure you want to delete {domain}? Type the domain name to confirm: ").ask()
-    if confirm_domain == domain:
-        subprocess.run(args)
-        print(f"{domain} has been deleted.")
-    else:
-        print("Domain deletion cancelled.")
-
-
-@cli.command()
-def domain_edit():
-    args = ['plesk', 'bin', 'domain', '--update']
-    domain = questionary.text("Enter domain name").ask()
-    if not domain_exists(domain):
-        print(f"{domain} does not exist.")
+@domain.command('create')
+@click.option('--domain', prompt=True , help='Domain name')
+@click.option('--hosting', prompt=True, help='Enable hosting', type=click.Choice(['yes', 'no']))
+def domain_create(domain, hosting):
+    if domain_exists(domain):
+        click.echo('Domain already exists')
         return
+    args = ['plesk', 'bin', 'domain', '--create']
     args.append(domain)
-    enable_hosting = questionary.select("Enable hosting?", choices=["Yes", "No"]).ask()
-    if enable_hosting == "Yes":
-        args.append("-hosting")
-        ip = get_current_ip()
+    if hosting == 'yes':
+        args.append('-hosting')
         args.append('-ip')
-        args.append(ip)
-        # prompt for user
-        user = questionary.text("Enter username").ask()
+        args.append(get_current_ip())
+
+        username = click.prompt('Username')
         args.append('-login')
-        args.append(user)
-        password = questionary.password("Enter password").ask()
+        args.append(username)
+
+        password = click.prompt('Password', hide_input=True)
         args.append('-passwd')
         args.append(password)
-    subprocess.run(args)
-    print(f"{domain} has been edited.")
+
+    click.echo('Creating domain...')
+    result = subprocess.run(args, capture_output=True)
+    if result.returncode == 0:
+        click.echo('Domain created successfully')
+    else:
+        click.echo('Error creating domain')
+        click.echo(result.stderr.decode('utf-8'))
+
+
+@domain.command('delete')
+@click.option('--domain', prompt=True, help='Domain name')
+def domain_delete(domain):
+    if not domain_exists(domain):
+        click.echo('Domain does not exist')
+        return
+
+    sure = click.confirm('Are you sure you want to delete the domain?')
+    if not sure:
+        return
+    args = ['plesk', 'bin', 'domain', '--delete']
+    args.append(domain)
+
+    click.echo('Deleting domain...')
+    result = subprocess.run(args, capture_output=True)
+    if result.returncode == 0:
+        click.echo('Domain deleted successfully')
+    else:
+        click.echo('Error deleting domain')
+        click.echo(result.stderr.decode('utf-8'))
+
 
 
 # start cli on call
