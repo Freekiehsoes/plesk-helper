@@ -62,7 +62,7 @@ def domain_create(domain, hosting):
 
     if created and hosting == 'yes':
         click.echo('Enabling hosting...')
-        result = subprocess.run(hostingcommand, capture_output=True)
+        result = run_command(hostingcommand)
         if result.returncode == 0:
             click.echo('Hosting enabled successfully')
         else:
