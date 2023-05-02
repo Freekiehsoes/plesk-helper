@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+import questionary
+import click
+import subprocess
+import socket
+
+
+def get_current_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    current_ip = s.getsockname()[0]
+    s.close()
+    return current_ip
+
+
+def domain_exists(domain):
+    args = ['plesk', 'bin', 'domain', '--info']
+    args.append(domain)
+    result = subprocess.run(args, capture_output=True)
+    if result.returncode == 0:
+        return True
+    else:
+        return False
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+def domain_create():
+    args = ['plesk', 'bin', 'domain', '--create']
+    domain = questionary.text("Enter domain name").ask()
+    args.append(domain)
+    enable_hosting = questionary.select("Enable hosting?", choices=["Yes", "No"]).ask()
+    if enable_hosting == "Yes":
+        args.append("-hosting")
+        ip = get_current_ip()
+        args.append('-ip')
+        args.append(ip)
+        # prompt for user
+        user = questionary.text("Enter username").ask()
+        args.append('-login')
+        args.append(user)
+        password = questionary.password("Enter password").ask()
+        args.append('-passwd')
+        args.append(password)
+    subprocess.run(args)
+
+
+@cli.command()
+def domain_delete():
+    args = ['plesk', 'bin', 'domain', '--delete']
+    domain = questionary.text("Enter domain name").ask()
+    args.append(domain)
+    confirm_domain = questionary.text(
+        f"Are you sure you want to delete {domain}? Type the domain name to confirm: ").ask()
+    if confirm_domain == domain:
+        subprocess.run(args)
+        print(f"{domain} has been deleted.")
+    else:
+        print("Domain deletion cancelled.")
+
+
+@cli.command()
+def domain_edit():
+    args = ['plesk', 'bin', 'domain', '--update']
+    domain = questionary.text("Enter domain name").ask()
+    if not domain_exists(domain):
+        print(f"{domain} does not exist.")
+        return
+    args.append(domain)
+    enable_hosting = questionary.select("Enable hosting?", choices=["Yes", "No"]).ask()
+    if enable_hosting == "Yes":
+        args.append("-hosting")
+        ip = get_current_ip()
+        args.append('-ip')
+        args.append(ip)
+        # prompt for user
+        user = questionary.text("Enter username").ask()
+        args.append('-login')
+        args.append(user)
+        password = questionary.password("Enter password").ask()
+        args.append('-passwd')
+        args.append(password)
+    subprocess.run(args)
+    print(f"{domain} has been edited.")
+
+
+# start cli on call
+if __name__ == "__main__":
+    cli();
