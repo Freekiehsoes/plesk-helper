@@ -46,7 +46,7 @@ def domain_create(domain, hosting):
     if domain_exists(domain):
         click.echo('Domain already exists')
         return
-    args = ['plesk bin site', '--create', domain]
+    args = ['plesk bin subscription', '--create', domain]
 
     if(hosting == 'yes'):
         args.append('-hosting true')
