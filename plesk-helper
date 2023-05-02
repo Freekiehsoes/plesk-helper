@@ -22,16 +22,23 @@ def domain_exists(domain):
         return False
 
 
+def run_command(command_array):
+    command_string = ' '.join(command_array)
+    return subprocess.run(command_array, capture_output=True)
+
+
 @click.group()
 def cli():
     pass
+
 
 @cli.group()
 def domain():
     pass
 
+
 @domain.command('create')
-@click.option('--domain', prompt=True , help='Domain name')
+@click.option('--domain', prompt=True, help='Domain name')
 @click.option('--hosting', prompt=True, help='Enable hosting', type=click.Choice(['yes', 'no']))
 def domain_create(domain, hosting):
     if domain_exists(domain):
@@ -44,8 +51,8 @@ def domain_create(domain, hosting):
         hostingcommand.append(f'plesk bin domain -u {domain} -hosting true')
 
     click.echo('Creating domain...')
-    result = subprocess.run(args, capture_output=True)
-    created= False
+    result = run_command(args)
+    created = False
     if result.returncode == 0:
         click.echo('Domain created successfully')
         created = True
@@ -62,6 +69,7 @@ def domain_create(domain, hosting):
             click.echo('Error enabling hosting')
             click.echo(result.stderr.decode('utf-8'))
 
+
 @domain.command('delete')
 @click.option('--domain', prompt=True, help='Domain name')
 def domain_delete(domain):
@@ -76,13 +84,12 @@ def domain_delete(domain):
     args.append(domain)
 
     click.echo('Deleting domain...')
-    result = subprocess.run(args, capture_output=True)
+    result = run_command(args)
     if result.returncode == 0:
         click.echo('Domain deleted successfully')
     else:
         click.echo('Error deleting domain')
         click.echo(result.stderr.decode('utf-8'))
-
 
 
 # start cli on call
