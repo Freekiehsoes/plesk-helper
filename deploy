@@ -1,0 +1,3 @@
+#!/bin/bash
+cp plesk-helper-source/plesk-helper ./plesk-helper;
+chmod +x ./plesk-helper;
