@@ -71,7 +71,7 @@ def domain_delete(domain):
     sure = click.confirm('Are you sure you want to delete the domain?')
     if not sure:
         return
-    args = ['plesk', 'bin', 'domain', '--delete']
+    args = ['plesk', 'bin', 'domain', '--remove']
     args.append(domain)
 
     click.echo('Deleting domain...')
